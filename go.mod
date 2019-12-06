@@ -1,4 +1,4 @@
-module github.com/zingsono/space/micro/lib/hgraph
+module github.com/mszsgo/hgraph
 
 go 1.13
 
