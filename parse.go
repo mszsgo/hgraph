@@ -51,10 +51,9 @@ func ParseGraphqlMicroService(gatewayHql string) map[string]string {
 				}
 			}
 			v := fmt.Sprintf("%s {%s}", operation, string(item))
-			log.Printf("name=【%s】 item=【%s】", serviceName, v)
+			log.Printf("serviceName=%s Graphql: %s", serviceName, v)
 			services[serviceName] = v
 		}
 	}
-	log.Println(services)
 	return services
 }
