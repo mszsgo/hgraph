@@ -3,10 +3,11 @@ package hgraph
 import (
 	"fmt"
 	"log"
+	"strings"
 )
 
-// 解析Graphql报文，请求到对应服务接口
-func ParseGraphqlMicroService(gatewayHql string) map[string]string {
+// 解析Graphql 字符串，第一级Key作为服务名，value拼接为查询字符串
+func ParseGraphqlQuery(query string) map[string]string {
 	services := make(map[string]string)
 	operation := ""
 
@@ -15,7 +16,7 @@ func ParseGraphqlMicroService(gatewayHql string) map[string]string {
 	endIndex := 0
 	endFlag := false
 	skipIndex := 0
-	runes := []rune(gatewayHql)
+	runes := []rune(query)
 	for i, ch := range runes {
 		char := string(ch)
 		if char == "{" {
@@ -46,7 +47,7 @@ func ParseGraphqlMicroService(gatewayHql string) map[string]string {
 			for i, r := range item {
 				s := string(r)
 				if s == "(" || s == "{" || s == "," {
-					serviceName = string(item[0:i])
+					serviceName = strings.TrimSpace(string(item[0:i]))
 					break
 				}
 			}
