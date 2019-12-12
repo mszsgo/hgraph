@@ -52,9 +52,9 @@ func getTag(structTag reflect.StructTag) *Tag {
 
 func resolve(v reflect.Value) graphql.FieldResolveFn {
 	var resolve graphql.FieldResolveFn
-	resolveMethod, ok := v.Type().MethodByName("Resolve")
+	resolveFn, ok := v.Type().MethodByName("Resolve")
 	if ok {
-		resolve = (resolveMethod.Func.Call([]reflect.Value{v})[0]).Interface().(graphql.FieldResolveFn)
+		resolve = (resolveFn.Func.Call([]reflect.Value{v})[0]).Interface().(graphql.FieldResolveFn)
 	}
 	return resolve
 }

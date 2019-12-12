@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"github.com/graphql-go/graphql"
-	"github.com/graphql-go/handler"
 )
 
 // Query 与 Mutation 的不同在于 并行与串行 执行
