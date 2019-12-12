@@ -9,15 +9,6 @@ import (
 
 // Query 与 Mutation 的不同在于 并行与串行 执行
 
-// Http Handler
-var GraphqlHttpHandler = func(query, mutation interface{}) *handler.Handler {
-	return handler.New(&handler.Config{
-		Schema:   GraphqlSchema(query, mutation),
-		Pretty:   true,
-		GraphiQL: true,
-	})
-}
-
 // Graphql Schema
 var GraphqlSchema = func(query, mutation interface{}) *graphql.Schema {
 	newSchema, err := graphql.NewSchema(graphql.SchemaConfig{
