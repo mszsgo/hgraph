@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -26,7 +25,7 @@ func BulkRequest(reqModel *GraphRequestModel, services map[string]string) *Graph
 			continue
 		}
 		reqModel.Query = v
-		serviceResModel := PostGraphql(k, reqModel)
+		serviceResModel := PostGraphqlService(k, reqModel)
 		for k2, v2 := range serviceResModel.Data {
 			resModel.Data[k2] = v2
 		}
@@ -40,36 +39,30 @@ func BulkRequest(reqModel *GraphRequestModel, services map[string]string) *Graph
 // 根据服务名调用服务
 // bytes 为http请求响应body
 // message 为错误消息
-func PostGraphql(name string, requestModel *GraphRequestModel) (resModel *GraphResponseModel) {
+func PostGraphqlService(name string, requestModel *GraphRequestModel) (resModel *GraphResponseModel) {
 	resModel = &GraphResponseModel{}
 	defer func() {
-		if msg := recover(); msg != nil {
+		if err := recover(); err != nil {
 			errorObject := make(map[string]interface{})
-			errorObject["message"] = msg
+			errorObject["message"] = err.(error).Error()
 			resModel.Errors = []map[string]interface{}{errorObject}
 			return
 		}
 	}()
 	reqBytes, err := json.Marshal(requestModel)
 	if err != nil {
-		panic(err.Error())
-		return
+		panic(err)
 	}
-	bytes, err := postRequest(name, reqBytes)
-	if err != nil {
-		panic(err.Error())
-		return
-	}
+	bytes := postRequest(name, reqBytes)
 	err = json.Unmarshal(bytes, &resModel)
 	if err != nil {
-		panic(err.Error())
-		return
+		panic(err)
 	}
 	return
 }
 
 // Post 请求，可使用HTTP代理
-func postRequest(name string, reqBytes []byte) (resBytes []byte, err error) {
+func postRequest(name string, reqBytes []byte) (resBytes []byte) {
 	client := &http.Client{
 		Transport: &http.Transport{
 			// 服务HTTP代理配置，示例系统环境变量： "MS_HTTP_PROXY=211.152.57.29:39084"
@@ -85,15 +78,14 @@ func postRequest(name string, reqBytes []byte) (resBytes []byte, err error) {
 	}
 	resp, err := client.Post(fmt.Sprintf("http://%s/graphql", name), "application/json;charset=utf-8", strings.NewReader(string(reqBytes)))
 	if err != nil {
-		log.Print(err)
-		return nil, errors.New("ERR_FEIGN " + err.Error())
+		panic(errors.New("ERR_FEIGN:" + err.Error()))
 	}
 	if resp.StatusCode != 200 {
-		panic(fmt.Sprintf("调用服务 %s HTTP响应状态 %d", name, resp.StatusCode))
+		panic(errors.New(fmt.Sprintf("调用服务 %s HTTP响应状态 %d", name, resp.StatusCode)))
 	}
 	resBytes, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.New("ERR_FEIGN 读取响应数据错误" + err.Error())
+		panic(errors.New("ERR_FEIGN:读取响应数据错误" + err.Error()))
 	}
-	return resBytes, nil
+	return resBytes
 }

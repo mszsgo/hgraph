@@ -1,21 +1,23 @@
-package hgraph
+package test
 
 import (
 	"encoding/json"
 	"log"
 	"testing"
+
+	"github.com/mszsgo/hgraph"
 )
 
 func TestParseGraphqlMicroService(t *testing.T) {
-	ParseGraphqlQuery("query {member(){list(){}   ,  total(){}}  , \r\n points(){list(){},total(){}}\r\n,svf(){list(){\r\n},total(){}}}")
-	ParseGraphqlQuery("query findMemeber {member{list(){id,name}   ,  total(){}}  }")
-	ParseGraphqlQuery("mutation {member(){list(){}   ,  total(){}}  }")
+	hgraph.ParseGraphqlQuery("query {member(){list(){}   ,  total(){}}  , \r\n points(){list(){},total(){}}\r\n,svf(){list(){\r\n},total(){}}}")
+	hgraph.ParseGraphqlQuery("query findMemeber {member{list(){id,name}   ,  total(){}}  }")
+	hgraph.ParseGraphqlQuery("mutation {member(){list(){}   ,  total(){}}  }")
 }
 
 // 测试服务调用
 // query{   member{session(token:"23423"){uid,mobile}},captcha{number{captchaId,base64Image}} }
 func TestGraphql(t *testing.T) {
-	resModel := Graphql(&GraphRequestModel{
+	resModel := hgraph.Graphql(&hgraph.GraphRequestModel{
 		RequestId:     "13123123123",
 		Token:         "13123123123",
 		OperationName: "",
