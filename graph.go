@@ -143,7 +143,7 @@ func fieldName(field reflect.StructField) string {
 		if tag.Graphql[:1] != "!" {
 			fieldName = tag.Graphql
 		}
-		if tag.Graphql[:1] == "!" {
+		if tag.Graphql[:1] == "!" && len(tag.Graphql) > 1 {
 			fieldName = tag.Graphql[1:]
 		}
 	}
