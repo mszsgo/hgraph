@@ -17,7 +17,7 @@ func TestParseGraphqlMicroService(t *testing.T) {
 // 测试服务调用
 // query{   member{session(token:"23423"){uid,mobile}},captcha{number{captchaId,base64Image}} }
 func TestGraphql(t *testing.T) {
-	resModel := hgraph.Graphql(&hgraph.GraphRequestModel{
+	resModel := hgraph.Feign(&hgraph.GraphRequestModel{
 		RequestId:     "13123123123",
 		Token:         "13123123123",
 		OperationName: "",

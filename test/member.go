@@ -1,9 +1,10 @@
 package test
 
 import (
-	"github.com/graphql-go/graphql"
+	"log"
+	"time"
 
-	"github.com/mszsgo/hgraph"
+	"github.com/graphql-go/graphql"
 )
 
 type Member struct {
@@ -11,7 +12,7 @@ type Member struct {
 	Mobile    string
 	Email     []string
 	Order     []Order
-	CreatedAt hgraph.Time
+	CreatedAt time.Time
 }
 
 // Object 名称，默认用结构体名称
@@ -27,7 +28,15 @@ func (*Member) Description() string {
 // 执行业务逻辑
 func (*Member) Resolve() graphql.FieldResolveFn {
 	return func(p graphql.ResolveParams) (i interface{}, err error) {
-		return "", err
+		log.Print("Resolve------------------")
+		i = Member{
+			LoginId:   "1132423",
+			Mobile:    "12",
+			Email:     []string{"1231", "12312"},
+			Order:     []Order{{OrderId: "1223423423"}},
+			CreatedAt: time.Now(),
+		}
+		return i, err
 	}
 }
 

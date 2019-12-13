@@ -38,7 +38,7 @@ type Tag struct {
 	Graphql           string
 	Description       string
 	DeprecationReason string
-	DefaultValue      interface{}
+	DefaultValue      string
 }
 
 func getTag(structTag reflect.StructTag) *Tag {
@@ -122,9 +122,13 @@ func args(v reflect.Value) graphql.FieldConfigArgument {
 		if argTag.Graphql != "" && strings.HasPrefix(argTag.Graphql, "!") {
 			inputType = graphql.NewNonNull(inputType)
 		}
+		var defValue interface{}
+		if argTag.DefaultValue != "" {
+			defValue = argTag.DefaultValue
+		}
 		fieldConfigArgument[fieldName(argField)] = &graphql.ArgumentConfig{
 			Type:         inputType,
-			DefaultValue: argTag.DefaultValue,
+			DefaultValue: defValue,
 			Description:  argTag.Description,
 		}
 	}
@@ -135,8 +139,13 @@ func fieldName(field reflect.StructField) string {
 	tag := getTag(field.Tag)
 	// 如果标签中存在名字则使用标签中定义的字段名，否则使用结构体属性名，首字母小写
 	fieldName := strings.ToLower(field.Name[0:1]) + field.Name[1:]
-	if tag.Graphql != "" && tag.Graphql[1:] != "" {
-		fieldName = tag.Graphql[1:]
+	if tag.Graphql != "" {
+		if tag.Graphql[:1] != "!" {
+			fieldName = tag.Graphql
+		}
+		if tag.Graphql[:1] == "!" {
+			fieldName = tag.Graphql[1:]
+		}
 	}
 	return fieldName
 }
@@ -147,7 +156,8 @@ func GraphqlType(t reflect.Type) graphql.Type {
 	if reflect.Struct != t.Kind() {
 		return scalar(t)
 	}
-	// TODO 如果使用自定义时间类型，名字请使用Time，时间实际结果是字符串
+
+	// 时间建议使用字符串类型
 	if t.Name() == "Time" {
 		return graphql.DateTime
 	}
