@@ -2,7 +2,11 @@ package hgraph
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
+
+	"github.com/mszsgo/hmap"
 )
 
 // Graphql 请求JSON Model
@@ -20,6 +24,23 @@ type GraphResponseModel struct {
 	HostTime  string                   `json:"hostTime"`
 	Data      map[string]interface{}   `json:"data"`
 	Errors    []map[string]interface{} `json:"errors,omitempty"`
+}
+
+// 返回第一条错误内容
+func (r *GraphResponseModel) FirstErrorMessage() error {
+	if len(r.Errors) > 0 {
+		return errors.New(r.Errors[0]["message"].(string))
+	}
+	return nil
+}
+
+// 转为结构体
+func (r *GraphResponseModel) ToStruct(serviceName string, output interface{}) {
+	s := r.Data[serviceName]
+	err := hmap.Decode(s, output)
+	if err != nil {
+		panic(errors.New(fmt.Sprintf("feign.ResponseModel ToStruct Error-> %s", err.Error())))
+	}
 }
 
 var ParseGraphqlReuqest = func(b []byte) *GraphRequestModel {

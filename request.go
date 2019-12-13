@@ -16,7 +16,7 @@ import (
 func BulkRequest(reqModel *GraphRequestModel, services map[string]string) *GraphResponseModel {
 	resModel := &GraphResponseModel{
 		RequestId: reqModel.RequestId,
-		HostTime:  time.Now().String(),
+		HostTime:  time.Now().Format(time.RFC3339),
 		Data:      make(map[string]interface{}),
 		Errors:    nil,
 	}
