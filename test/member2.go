@@ -8,7 +8,7 @@ type Member2 struct {
 	LoginId   string
 	Mobile    string
 	Email     []string
-	Order     []Order2
+	Order     []*Order2
 	CreatedAt string
 }
 
