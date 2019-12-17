@@ -117,7 +117,15 @@ func args(v reflect.Value) graphql.FieldConfigArgument {
 	argsType := value.Type().Elem()
 	for j := 0; j < argsType.NumField(); j++ {
 		argField := argsType.Field(j)
-		inputType := argsInputType(argField.Type)
+		if argField.Anonymous {
+			continue
+		}
+		var inputType graphql.Type
+		if reflect.Slice == argField.Type.Kind() {
+			inputType = graphql.NewList(argsInputType(argField.Type.Elem()))
+		} else {
+			inputType = argsInputType(argField.Type)
+		}
 		argTag := getTag(argField.Tag)
 		if argTag.Graphql != "" && strings.HasPrefix(argTag.Graphql, "!") {
 			inputType = graphql.NewNonNull(inputType)
