@@ -11,8 +11,8 @@ import (
 // Graphql Schema
 var GraphqlSchema = func(query, mutation interface{}) *graphql.Schema {
 	newSchema, err := graphql.NewSchema(graphql.SchemaConfig{
-		Query:        GraphqlObject(query),
-		Mutation:     GraphqlObject(mutation),
+		Query: GraphqlObject(query),
+		// Mutation:     GraphqlObject(mutation),
 		Subscription: nil,
 		Types:        nil,
 		Directives:   nil,

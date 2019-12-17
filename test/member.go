@@ -11,8 +11,8 @@ type Member struct {
 	LoginId   string
 	Mobile    string
 	Email     []string
-	Order     []Order
-	CreatedAt time.Time
+	Order     []*Order
+	CreatedAt string
 }
 
 // Object 名称，默认用结构体名称
@@ -33,8 +33,8 @@ func (*Member) Resolve() graphql.FieldResolveFn {
 			LoginId:   "1132423",
 			Mobile:    "12",
 			Email:     []string{"1231", "12312"},
-			Order:     []Order{{OrderId: "1223423423"}},
-			CreatedAt: time.Now(),
+			Order:     []*Order{{OrderId: "1223423423"}},
+			CreatedAt: time.Now().Format(time.RFC3339),
 		}
 		return i, err
 	}

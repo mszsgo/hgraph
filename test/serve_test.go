@@ -10,5 +10,5 @@ import (
 
 func TestServeHandel(t *testing.T) {
 	log.Print("启动服务： http://localhost:9990")
-	http.ListenAndServe(":9990", hgraph.GraphqlHttpHandler(Query{}, Mutation{}))
+	http.ListenAndServe(":9990", hgraph.GraphqlHttpHandler(&Query{}, &Mutation{}))
 }

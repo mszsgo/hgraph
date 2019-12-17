@@ -50,7 +50,11 @@ func getTag(structTag reflect.StructTag) *Tag {
 	}
 }
 
-func resolve(v reflect.Value) graphql.FieldResolveFn {
+func resolve(structType reflect.Type) graphql.FieldResolveFn {
+	if structType.Kind() != reflect.Ptr {
+		return nil
+	}
+	v := reflect.New(structType.Elem())
 	var resolve graphql.FieldResolveFn
 	resolveFn, ok := v.Type().MethodByName("Resolve")
 	if ok {
@@ -107,8 +111,12 @@ func argsInputType(t reflect.Type) graphql.Type {
 	return inputObject
 }
 
-func args(v reflect.Value) graphql.FieldConfigArgument {
-	argsMethod, ok := v.Type().MethodByName("Args")
+func args(structType reflect.Type) graphql.FieldConfigArgument {
+	if structType.Kind() != reflect.Ptr {
+		return nil
+	}
+	v := reflect.New(structType.Elem())
+	argsMethod, ok := structType.MethodByName("Args")
 	if !ok {
 		return nil
 	}
@@ -161,11 +169,12 @@ func fieldName(field reflect.StructField) string {
 // object := Query{}
 // objectType := reflect.TypeOf(object)
 func GraphqlType(t reflect.Type) graphql.Type {
+	if reflect.Ptr == t.Kind() {
+		t = t.Elem()
+	}
 	if reflect.Struct != t.Kind() {
 		return scalar(t)
 	}
-
-	// 时间建议使用字符串类型
 	if t.Name() == "Time" {
 		return graphql.DateTime
 	}
@@ -175,18 +184,18 @@ func GraphqlType(t reflect.Type) graphql.Type {
 		if structField.Anonymous {
 			continue
 		}
-		newStructField := reflect.New(structField.Type)
+		structType := structField.Type
 		var gtype graphql.Type
-		if reflect.Slice == structField.Type.Kind() {
-			gtype = graphql.NewList(GraphqlType(structField.Type.Elem()))
+		if reflect.Slice == structType.Kind() {
+			gtype = graphql.NewList(GraphqlType(structType.Elem()))
 		} else {
-			gtype = GraphqlType(structField.Type)
+			gtype = GraphqlType(structType)
 		}
 		tag := getTag(structField.Tag)
 		fields[fieldName(structField)] = &graphql.Field{
 			Type:              gtype,
-			Args:              args(newStructField),
-			Resolve:           resolve(newStructField),
+			Args:              args(structType),
+			Resolve:           resolve(structType),
 			DeprecationReason: tag.DeprecationReason,
 			Description:       tag.Description,
 		}
@@ -207,8 +216,8 @@ func GraphqlType(t reflect.Type) graphql.Type {
 	return graphqlObject
 }
 
-// i = Query{}
-// i = Mutation{}
+// i = &Query{}
+// i = &Mutation{}
 func GraphqlObject(i interface{}) *graphql.Object {
 	return GraphqlType(reflect.TypeOf(i)).(*graphql.Object)
 }

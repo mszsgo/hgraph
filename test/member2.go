@@ -2,16 +2,14 @@ package test
 
 import (
 	"github.com/graphql-go/graphql"
-
-	"github.com/mszsgo/hgraph"
 )
 
 type Member2 struct {
 	LoginId   string
 	Mobile    string
 	Email     []string
-	Order     []*Order2
-	CreatedAt hgraph.Time
+	Order     []Order2
+	CreatedAt string
 }
 
 // Object 名称，默认用结构体名称
