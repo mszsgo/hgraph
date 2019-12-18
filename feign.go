@@ -3,10 +3,9 @@ package hgraph
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 
-	"github.com/mszsgo/hmap"
+	"github.com/mszsgo/hjson"
 )
 
 // Graphql 请求JSON Model
@@ -37,10 +36,7 @@ func (r *GraphResponseModel) FirstErrorMessage() error {
 // 转为结构体
 func (r *GraphResponseModel) ToStruct(serviceName string, output interface{}) {
 	s := r.Data[serviceName]
-	err := hmap.Decode(s, output)
-	if err != nil {
-		panic(errors.New(fmt.Sprintf("feign.ResponseModel ToStruct Error-> %s", err.Error())))
-	}
+	hjson.MapToStruct(s, output)
 }
 
 var ParseGraphqlReuqest = func(b []byte) *GraphRequestModel {
