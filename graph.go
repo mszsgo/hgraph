@@ -50,11 +50,7 @@ func getTag(structTag reflect.StructTag) *Tag {
 	}
 }
 
-func resolve(structType reflect.Type) graphql.FieldResolveFn {
-	if structType.Kind() != reflect.Ptr {
-		return nil
-	}
-	v := reflect.New(structType.Elem())
+func resolve(v reflect.Value) graphql.FieldResolveFn {
 	var resolve graphql.FieldResolveFn
 	resolveFn, ok := v.Type().MethodByName("Resolve")
 	if ok {
@@ -81,7 +77,7 @@ func name(v reflect.Value) string {
 }
 
 func argsInputType(t reflect.Type) graphql.Type {
-	if reflect.Ptr == t.Kind() {
+	if reflect.Ptr == t.Kind() || reflect.Slice == t.Kind() {
 		t = t.Elem()
 	}
 	if reflect.Struct != t.Kind() {
@@ -114,22 +110,18 @@ func argsInputType(t reflect.Type) graphql.Type {
 	return inputObject
 }
 
-func args(structType reflect.Type) graphql.FieldConfigArgument {
-	if structType.Kind() != reflect.Ptr {
-		return nil
-	}
-	v := reflect.New(structType.Elem())
-	argsMethod, ok := structType.MethodByName("Args")
+func args(v reflect.Value) graphql.FieldConfigArgument {
+	argsMethod, ok := v.Type().MethodByName("Args")
 	if !ok {
 		return nil
 	}
 	var fieldConfigArgument = graphql.FieldConfigArgument{}
 	value := argsMethod.Func.Call([]reflect.Value{v})[0]
 	argsType := value.Type().Elem()
-	log.Printf("argsType %s ", argsType.Name())
+	// log.Printf("argsType %s ", argsType.Name())
 	for j := 0; j < argsType.NumField(); j++ {
 		argField := argsType.Field(j)
-		log.Printf("argField.Name %d=%s ", j, argField.Name)
+		// log.Printf("argField.Name %d=%s ", j, argField.Name)
 		if argField.Anonymous {
 			continue
 		}
@@ -191,17 +183,27 @@ func GraphqlType(t reflect.Type) graphql.Type {
 			continue
 		}
 		structType := structField.Type
+
+		// Graphql Field Type
 		var gtype graphql.Type
+		var newStructType reflect.Value
 		if reflect.Slice == structType.Kind() {
 			gtype = graphql.NewList(GraphqlType(structType.Elem()))
+			newStructType = reflect.New(structType.Elem())
 		} else {
 			gtype = GraphqlType(structType)
+			newStructType = reflect.New(structType)
 		}
+		// Graphql Field Args
+		args := args(newStructType)
+		// Graphql Field  Resolve
+		resolve := resolve(newStructType)
+		// Graphql Field Description
 		tag := getTag(structField.Tag)
 		fields[fieldName(structField)] = &graphql.Field{
 			Type:              gtype,
-			Args:              args(structType),
-			Resolve:           resolve(structType),
+			Args:              args,
+			Resolve:           resolve,
 			DeprecationReason: tag.DeprecationReason,
 			Description:       tag.Description,
 		}

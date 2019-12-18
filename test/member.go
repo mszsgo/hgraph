@@ -64,3 +64,12 @@ func (*Member) Args() *MemberArgs {
 type Order struct {
 	OrderId string
 }
+
+type OrderArgs struct {
+	OrderId string
+}
+
+// 会员类型参数
+func (*Order) Args() *OrderArgs {
+	return &OrderArgs{}
+}
