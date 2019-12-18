@@ -77,7 +77,10 @@ func name(v reflect.Value) string {
 }
 
 func argsInputType(t reflect.Type) graphql.Type {
-	if reflect.Ptr == t.Kind() || reflect.Slice == t.Kind() {
+	if reflect.Slice == t.Kind() {
+		t = t.Elem()
+	}
+	if reflect.Ptr == t.Kind() {
 		t = t.Elem()
 	}
 	if reflect.Struct != t.Kind() {
@@ -186,14 +189,20 @@ func GraphqlType(t reflect.Type) graphql.Type {
 
 		// Graphql Field Type
 		var gtype graphql.Type
-		var newStructType reflect.Value
 		if reflect.Slice == structType.Kind() {
 			gtype = graphql.NewList(GraphqlType(structType.Elem()))
-			newStructType = reflect.New(structType.Elem())
 		} else {
 			gtype = GraphqlType(structType)
-			newStructType = reflect.New(structType)
 		}
+		// New Field Type
+		var newStructType reflect.Value
+		if reflect.Slice == structType.Kind() {
+			structType = structType.Elem()
+		}
+		if reflect.Ptr == structType.Kind() {
+			structType = structType.Elem()
+		}
+		newStructType = reflect.New(structType)
 		// Graphql Field Args
 		args := args(newStructType)
 		// Graphql Field  Resolve

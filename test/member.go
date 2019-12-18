@@ -73,3 +73,10 @@ type OrderArgs struct {
 func (*Order) Args() *OrderArgs {
 	return &OrderArgs{}
 }
+
+func (*Order) Resolve() graphql.FieldResolveFn {
+	return func(p graphql.ResolveParams) (i interface{}, err error) {
+		i = []*Order{{OrderId: "2535346345"}}
+		return i, err
+	}
+}
