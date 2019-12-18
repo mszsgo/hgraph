@@ -4,6 +4,7 @@ package hgraph
 import (
 	"log"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/graphql-go/graphql"
@@ -138,9 +139,19 @@ func args(v reflect.Value) graphql.FieldConfigArgument {
 		if argTag.Graphql != "" && strings.HasPrefix(argTag.Graphql, "!") {
 			inputType = graphql.NewNonNull(inputType)
 		}
+
+		// Fields Default Value
 		var defValue interface{}
 		if argTag.DefaultValue != "" {
-			defValue = argTag.DefaultValue
+			if reflect.Int == argField.Type.Kind() {
+				defValue, _ = strconv.Atoi(argTag.DefaultValue)
+			}
+			if reflect.Int64 == argField.Type.Kind() {
+				defValue, _ = strconv.ParseInt(argTag.DefaultValue, 10, 64)
+			}
+			if reflect.String == argField.Type.Kind() {
+				defValue = argTag.DefaultValue
+			}
 		}
 		fieldConfigArgument[fieldName(argField)] = &graphql.ArgumentConfig{
 			Type:         inputType,
