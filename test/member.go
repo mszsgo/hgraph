@@ -11,8 +11,18 @@ type Member struct {
 	LoginId   string
 	Mobile    string
 	Email     []string
-	Order     []*Order
+	Order     []Order
 	CreatedAt string
+	Total     *TotalType
+}
+
+type TotalType int64
+
+func (*TotalType) Resolve() graphql.FieldResolveFn {
+	return func(p graphql.ResolveParams) (i interface{}, err error) {
+
+		return 234234, err
+	}
 }
 
 // Object 名称，默认用结构体名称
@@ -33,7 +43,7 @@ func (*Member) Resolve() graphql.FieldResolveFn {
 			LoginId:   "1132423",
 			Mobile:    "12",
 			Email:     []string{"1231", "12312"},
-			Order:     []*Order{{OrderId: "1223423423"}},
+			Order:     []Order{{OrderId: "1223423423"}},
 			CreatedAt: time.Now().Format(time.RFC3339),
 		}
 		return i, err

@@ -81,6 +81,9 @@ func name(v reflect.Value) string {
 }
 
 func argsInputType(t reflect.Type) graphql.Type {
+	if reflect.Ptr == t.Kind() {
+		t = t.Elem()
+	}
 	if reflect.Struct != t.Kind() {
 		return scalar(t)
 	}
@@ -123,8 +126,10 @@ func args(structType reflect.Type) graphql.FieldConfigArgument {
 	var fieldConfigArgument = graphql.FieldConfigArgument{}
 	value := argsMethod.Func.Call([]reflect.Value{v})[0]
 	argsType := value.Type().Elem()
+	log.Printf("argsType %s ", argsType.Name())
 	for j := 0; j < argsType.NumField(); j++ {
 		argField := argsType.Field(j)
+		log.Printf("argField.Name %d=%s ", j, argField.Name)
 		if argField.Anonymous {
 			continue
 		}
@@ -176,6 +181,7 @@ func GraphqlType(t reflect.Type) graphql.Type {
 		return scalar(t)
 	}
 	if t.Name() == "Time" {
+		// 时间格式使用RFC3339标准
 		return graphql.DateTime
 	}
 	fields := graphql.Fields{}
@@ -216,8 +222,8 @@ func GraphqlType(t reflect.Type) graphql.Type {
 	return graphqlObject
 }
 
-// i = &Query{}
-// i = &Mutation{}
+// i = Query{}
+// i = Mutation{}
 func GraphqlObject(i interface{}) *graphql.Object {
 	return GraphqlType(reflect.TypeOf(i)).(*graphql.Object)
 }

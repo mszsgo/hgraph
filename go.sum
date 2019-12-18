@@ -2,5 +2,9 @@ github.com/graphql-go/graphql v0.7.8 h1:769CR/2JNAhLG9+aa8pfLkKdR0H+r5lsQqling5W
 github.com/graphql-go/graphql v0.7.8/go.mod h1:k6yrAYQaSP59DC5UVxbgxESlmVyojThKdORUqGDGmrI=
 github.com/graphql-go/handler v0.2.3 h1:CANh8WPnl5M9uA25c2GBhPqJhE53Fg0Iue/fRNla71E=
 github.com/graphql-go/handler v0.2.3/go.mod h1:leLF6RpV5uZMN1CdImAxuiayrYYhOk33bZciaUGaXeU=
+github.com/mszsgo/hjson v0.0.1 h1:5uzMnrRRd041Wtb081/EnRbBhnShNrFfpp6ZJ06to3g=
+github.com/mszsgo/hjson v0.0.1/go.mod h1:FiOUAaflic7Blf2TZRHC+H3hBAT11RYA3E/ajPJyJTY=
 github.com/mszsgo/hmap v1.2.0 h1:/fYQbrYamzd3uKCYIqzse9DX2W3nicVVnjnmTqjqKeQ=
 github.com/mszsgo/hmap v1.2.0/go.mod h1:SDVTH0JO9SqNqI3uwL5hcVZnjqnNpgQuKgC0Dy1BkmY=
+github.com/mszsgo/hmap v1.2.1 h1:jH4O6xTFPrhSprj5JgmW6lvQLv6h1i3+5TRuIhVwqx0=
+github.com/mszsgo/hmap v1.2.1/go.mod h1:SDVTH0JO9SqNqI3uwL5hcVZnjqnNpgQuKgC0Dy1BkmY=
