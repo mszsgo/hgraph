@@ -26,7 +26,7 @@ http.ListenAndServe(":9990", hgraph.GraphqlHttpHandler(Query{}, Mutation{}))
  
  # Change Log
  
- 
+
  ## v0.1.0
  - 使用Go结构体的方式构建Graphql schema 
  

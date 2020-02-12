@@ -247,5 +247,8 @@ func GraphqlType(t reflect.Type) graphql.Type {
 // i = Query{}
 // i = Mutation{}
 func GraphqlObject(i interface{}) *graphql.Object {
+	if i == nil {
+		return nil
+	}
 	return GraphqlType(reflect.TypeOf(i)).(*graphql.Object)
 }
