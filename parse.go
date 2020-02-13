@@ -8,6 +8,11 @@ import (
 
 // 解析Graphql 字符串，第一级Key作为服务名，value拼接为查询字符串
 func ParseGraphqlQuery(query string) map[string]string {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Panic("ParseGraphqlQuery Error queryString=" + query)
+		}
+	}()
 	services := make(map[string]string)
 	operation := ""
 

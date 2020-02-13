@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"time"
 
 	"github.com/mszsgo/hjson"
 )
@@ -39,34 +40,43 @@ func (r *GraphResponseModel) ToStruct(serviceName string, output interface{}) {
 	hjson.MapToStruct(s, output)
 }
 
-var ParseGraphqlReuqest = func(b []byte) *GraphRequestModel {
+func ParseGraphqlReuqest(b []byte) (*GraphRequestModel, error) {
 	var model *GraphRequestModel
 	err := json.Unmarshal(b, &model)
 	if err != nil {
-		log.Print(err)
+		log.Print("Request JSON Parse Error:" + err.Error() + "  ReqJson=" + string(b))
+		return nil, errors.New("Request JSON Parse Error")
 	}
-	return model
-}
-
-// 网关调用服务
-func Gateway(body []byte) []byte {
-	reqModel := ParseGraphqlReuqest(body)
-	bytes, err := json.Marshal(Feign(reqModel))
-	if err != nil {
-		log.Print(err)
-	}
-	return bytes
+	return model, nil
 }
 
 // 调用业务服务
 // 解析请求字符串第一级字段作为服务名调用Graphql服务
-func Feign(model *GraphRequestModel) *GraphResponseModel {
-	services := ParseGraphqlQuery(model.Query)
-	return BulkRequest(&GraphRequestModel{
-		RequestId:     model.RequestId,
-		Token:         model.Token,
-		OperationName: model.OperationName,
+func Feign(reqModel *GraphRequestModel) (resModel *GraphResponseModel) {
+
+	defer func() {
+		if err := recover(); err != nil {
+			e := err.(error)
+			resModel = &GraphResponseModel{
+				RequestId: reqModel.RequestId,
+				HostTime:  time.Now().Format(time.RFC3339),
+				Data:      map[string]interface{}{},
+				Errors:    []map[string]interface{}{{"message": e.Error()}},
+			}
+		}
+	}()
+
+	services := ParseGraphqlQuery(reqModel.Query)
+	if len(services) == 0 {
+		log.Print("Graphql Query String parse Error hql=" + reqModel.Query)
+		panic(errors.New("Graphql Query String parse Error len(services)=0"))
+	}
+	resModel = BulkRequest(&GraphRequestModel{
+		RequestId:     reqModel.RequestId,
+		Token:         reqModel.Token,
+		OperationName: reqModel.OperationName,
 		Query:         "",
-		Variables:     model.Variables,
+		Variables:     reqModel.Variables,
 	}, services)
+	return resModel
 }
