@@ -5,9 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"net/http"
-	"net/url"
-	"os"
 	"strings"
 	"time"
 )
@@ -63,19 +60,7 @@ func PostGraphqlService(name string, requestModel *GraphRequestModel) (resModel 
 
 // Post 请求，可使用HTTP代理
 func postRequest(name string, reqBytes []byte) (resBytes []byte) {
-	client := &http.Client{
-		Transport: &http.Transport{
-			// 服务HTTP代理配置，示例系统环境变量： "MS_HTTP_PROXY=211.152.57.29:39084"
-			Proxy: func(request *http.Request) (url *url.URL, err error) {
-				msHttpProxy := os.Getenv("MS_HTTP_PROXY")
-				if msHttpProxy != "" {
-					request.URL.Host = msHttpProxy
-				}
-				return request.URL, err
-			},
-		},
-		Timeout: 5 * time.Second,
-	}
+	client := HttpClient()
 	resp, err := client.Post(fmt.Sprintf("http://%s/graphql", name), "application/json;charset=utf-8", strings.NewReader(string(reqBytes)))
 	if err != nil {
 		panic(errors.New("ERR_FEIGN:" + err.Error()))
