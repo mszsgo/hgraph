@@ -1,8 +1,11 @@
 package hgraph
 
 import (
+	"context"
+	"log"
 	"net/http"
 
+	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 )
 
@@ -13,6 +16,10 @@ func GraphqlHttpHandler(query, mutation interface{}) *handler.Handler {
 		Schema:   GraphqlSchema(query, mutation),
 		Pretty:   true,
 		GraphiQL: true,
+		ResultCallbackFn: func(ctx context.Context, params *graphql.Params, result *graphql.Result, responseBody []byte) {
+			log.Print("requestBody:" + params.RequestString)
+			log.Print("responseBody:" + string(responseBody))
+		},
 	})
 }
 
