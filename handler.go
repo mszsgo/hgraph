@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
@@ -17,8 +18,12 @@ func GraphqlHttpHandler(query, mutation interface{}) *handler.Handler {
 		Pretty:   true,
 		GraphiQL: true,
 		ResultCallbackFn: func(ctx context.Context, params *graphql.Params, result *graphql.Result, responseBody []byte) {
-			log.Print("requestBody:" + params.RequestString)
-			log.Print("responseBody:" + string(responseBody))
+			reqstr := strings.ReplaceAll(params.RequestString, "\n", "")
+			reqstr = strings.ReplaceAll(reqstr, "\t", "")
+			resstr := strings.ReplaceAll(string(responseBody), "\n", "")
+			resstr = strings.ReplaceAll(resstr, "\t", "")
+			log.Print("requestBody:" + reqstr)
+			log.Print("responseBody:" + resstr)
 		},
 	})
 }
