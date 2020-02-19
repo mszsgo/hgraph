@@ -9,7 +9,7 @@ import (
 func TestGateway(t *testing.T) {
 	graphql := `
 	{
-		"requestId":"uuid",
+		"requestId":"",
 		"token":"t",
 		"query":"
 			query {

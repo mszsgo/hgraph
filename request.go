@@ -2,9 +2,9 @@ package hgraph
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"strings"
 	"time"
 )
@@ -22,7 +22,13 @@ func BulkRequest(reqModel *GraphRequestModel, services map[string]string) *Graph
 			continue
 		}
 		reqModel.Query = v
-		serviceResModel := PostGraphqlService(k, reqModel)
+		serviceResModel, err := PostGraphqlService(k, reqModel)
+		if err != nil {
+			errorMap := make(map[string]interface{})
+			errorMap["message"] = err.Error()
+			resModel.Errors = append(resModel.Errors, errorMap)
+			continue
+		}
 		for k2, v2 := range serviceResModel.Data {
 			resModel.Data[k2] = v2
 		}
@@ -36,41 +42,38 @@ func BulkRequest(reqModel *GraphRequestModel, services map[string]string) *Graph
 // 根据服务名调用服务
 // bytes 为http请求响应body
 // message 为错误消息
-func PostGraphqlService(name string, requestModel *GraphRequestModel) (resModel *GraphResponseModel) {
-	resModel = &GraphResponseModel{}
-	defer func() {
-		if err := recover(); err != nil {
-			errorObject := make(map[string]interface{})
-			errorObject["message"] = err.(error).Error()
-			resModel.Errors = []map[string]interface{}{errorObject}
-			return
-		}
-	}()
+func PostGraphqlService(name string, requestModel *GraphRequestModel) (resModel *GraphResponseModel, err error) {
 	reqBytes, err := json.Marshal(requestModel)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	bytes := postRequest(name, reqBytes)
+	bytes, err := postRequest(name, reqBytes)
+	if err != nil {
+		return nil, err
+	}
 	err = json.Unmarshal(bytes, &resModel)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	return
 }
 
 // Post 请求，可使用HTTP代理
-func postRequest(name string, reqBytes []byte) (resBytes []byte) {
+func postRequest(name string, reqBytes []byte) (resBytes []byte, err error) {
 	client := HttpClient()
 	resp, err := client.Post(fmt.Sprintf("http://%s/graphql", name), "application/json;charset=utf-8", strings.NewReader(string(reqBytes)))
 	if err != nil {
-		panic(errors.New("ERR_FEIGN:" + err.Error()))
+		log.Print("ERR_FEIGN:" + err.Error())
+		return nil, E99110
 	}
 	if resp.StatusCode != 200 {
-		panic(errors.New(fmt.Sprintf("调用服务 %s HTTP响应状态 %d", name, resp.StatusCode)))
+		log.Printf(fmt.Sprintf("调用服务 %s HTTP响应状态 %d", name, resp.StatusCode))
+		return nil, E99111
 	}
 	resBytes, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		panic(errors.New("ERR_FEIGN:读取响应数据错误" + err.Error()))
+		log.Printf("ERR_FEIGN:读取响应数据错误" + err.Error())
+		return nil, E99112
 	}
-	return resBytes
+	return
 }

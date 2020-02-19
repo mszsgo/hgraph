@@ -6,14 +6,16 @@ import (
 	"time"
 )
 
-func responseModel(requestBody []byte) (resModel *GraphResponseModel) {
-	reqModel, err := ParseGraphqlReuqest(requestBody)
+func jsonRequest(requestBody []byte) (resModel *GraphResponseModel) {
+	var reqModel *GraphRequestModel
+	err := json.Unmarshal(requestBody, &reqModel)
 	if err != nil {
+		log.Print("Request JSON Parse Error:" + err.Error() + "  ReqJson=" + string(requestBody))
 		resModel = &GraphResponseModel{
-			RequestId: "",
+			RequestId: UUID(),
 			HostTime:  time.Now().Format(time.RFC3339),
 			Data:      map[string]interface{}{},
-			Errors:    []map[string]interface{}{{"message": err.Error()}},
+			Errors:    []map[string]interface{}{{"message": "Request JSON Parse Error"}},
 		}
 		return
 	}
@@ -23,10 +25,14 @@ func responseModel(requestBody []byte) (resModel *GraphResponseModel) {
 
 // 网关调用服务
 func Gateway(requestBody []byte) []byte {
-	resModel := responseModel(requestBody)
+	// 待实现：解密
+
+	resModel := jsonRequest(requestBody)
 	responseBody, err := json.Marshal(resModel)
 	if err != nil {
-		log.Panic("ERROR ->  responseBody, err := json.Marshal(resModel)")
+		log.Printf("ERROR ->  responseBody, err := json.Marshal(resModel)")
 	}
+
+	// 待实现：加密
 	return responseBody
 }

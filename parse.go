@@ -7,13 +7,14 @@ import (
 )
 
 // 解析Graphql 字符串，第一级Key作为服务名，value拼接为查询字符串
-func ParseGraphqlQuery(query string) map[string]string {
+func ParseGraphqlQuery(query string) (services map[string]string, err error) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Panic("ParseGraphqlQuery Error queryString=" + query)
+			log.Printf("ParseGraphqlQuery Error queryString=" + query)
+			err = E99101
 		}
 	}()
-	services := make(map[string]string)
+	services = make(map[string]string)
 	operation := ""
 
 	lb := 0
@@ -61,5 +62,5 @@ func ParseGraphqlQuery(query string) map[string]string {
 			services[serviceName] = v
 		}
 	}
-	return services
+	return services, nil
 }

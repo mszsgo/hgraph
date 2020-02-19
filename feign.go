@@ -1,7 +1,6 @@
 package hgraph
 
 import (
-	"encoding/json"
 	"errors"
 	"log"
 	"time"
@@ -12,6 +11,7 @@ import (
 // Graphql 请求JSON Model
 type GraphRequestModel struct {
 	RequestId     string      `json:"requestId"`
+	RequestTime   string      `json:"requestTime"`
 	Token         string      `json:"token"`
 	OperationName string      `json:"operationName"`
 	Query         string      `json:"query"`
@@ -40,36 +40,31 @@ func (r *GraphResponseModel) ToStruct(serviceName string, output interface{}) {
 	hjson.MapToStruct(s, output)
 }
 
-func ParseGraphqlReuqest(b []byte) (*GraphRequestModel, error) {
-	var model *GraphRequestModel
-	err := json.Unmarshal(b, &model)
-	if err != nil {
-		log.Print("Request JSON Parse Error:" + err.Error() + "  ReqJson=" + string(b))
-		return nil, errors.New("Request JSON Parse Error")
-	}
-	return model, nil
-}
-
 // 调用业务服务
 // 解析请求字符串第一级字段作为服务名调用Graphql服务
 func Feign(reqModel *GraphRequestModel) (resModel *GraphResponseModel) {
-
-	defer func() {
-		if err := recover(); err != nil {
-			e := err.(error)
-			resModel = &GraphResponseModel{
-				RequestId: reqModel.RequestId,
-				HostTime:  time.Now().Format(time.RFC3339),
-				Data:      map[string]interface{}{},
-				Errors:    []map[string]interface{}{{"message": e.Error()}},
-			}
-		}
-	}()
-
-	services := ParseGraphqlQuery(reqModel.Query)
+	if reqModel.RequestId == "" {
+		reqModel.RequestId = UUID32()
+	}
+	resModel = &GraphResponseModel{
+		RequestId: reqModel.RequestId,
+		HostTime:  time.Now().Format(time.RFC3339),
+		Data:      map[string]interface{}{},
+		Errors:    nil,
+	}
+	services, err := ParseGraphqlQuery(reqModel.Query)
+	if err != nil {
+		errorMap := make(map[string]interface{})
+		errorMap["message"] = err.Error()
+		resModel.Errors = append(resModel.Errors, errorMap)
+		return resModel
+	}
 	if len(services) == 0 {
 		log.Print("Graphql Query String parse Error hql=" + reqModel.Query)
-		panic(errors.New("Graphql Query String parse Error len(services)=0"))
+		errorMap := make(map[string]interface{})
+		errorMap["message"] = "Graphql String parse Error len(services)=0"
+		resModel.Errors = append(resModel.Errors, errorMap)
+		return resModel
 	}
 	resModel = BulkRequest(&GraphRequestModel{
 		RequestId:     reqModel.RequestId,
